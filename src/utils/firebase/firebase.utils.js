@@ -11,15 +11,24 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 
-import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  getFirestore,
+  setDoc,
+  collection,
+  writeBatch,
+  query,
+  getDocs,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyA0bT-5i2q8b2YVChImBcmaj9Q-8mkQ3PA',
-  authDomain: 'cy-clothing-db.firebaseapp.com',
-  projectId: 'cy-clothing-db',
-  storageBucket: 'cy-clothing-db.appspot.com',
-  messagingSenderId: '121739669508',
-  appId: '1:121739669508:web:73343735a3b4e350644551',
+  apiKey: 'AIzaSyCHvM_e3REeqHIypISVlM34nGm4b0-eOXI',
+  authDomain: 'cy-clothing.firebaseapp.com',
+  projectId: 'cy-clothing',
+  storageBucket: 'cy-clothing.appspot.com',
+  messagingSenderId: '998423435034',
+  appId: '1:998423435034:web:f68618c57b5dbb77413ea3',
 };
 
 // Initialize Firebase
@@ -38,6 +47,31 @@ export const signInWithGoogleRedirect = () =>
   signInWithRedirect(auth, googleProvider);
 
 export const db = getFirestore();
+
+export const addCollectionAndDocuments = async (collectionKey, objectToAdd) => {
+  const collectionRef = collection(db, collectionKey);
+  const batch = writeBatch(db);
+
+  objectToAdd.forEach((object) => {
+    const docRef = doc(collectionRef, object.title.toLowerCase());
+    batch.set(docRef, object);
+  });
+
+  await batch.commit();
+  console.log('done');
+};
+
+export const getCategoriesAndDocuments = async () => {
+  const collectionRef = collection(db, 'categories');
+  const q = query(collectionRef);
+  const querySnapshot = await getDocs(q);
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
+    acc[title.toLowerCase()] = items;
+    return acc;
+  }, {});
+  return categoryMap;
+};
 
 export const createUserDocumentFormAuth = async (
   userAuth,
